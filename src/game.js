@@ -126,7 +126,24 @@ function draw_reflector_at(x, y, radius, color){
 	CTX.restore();
 }
 
-function draw_str_at(str, x, y, color, size){
+var TXT_ALIGN_LEFT = 1;
+var TXT_ALIGN_CENTER = 2;
+var TXT_ALIGN_RIGHT = 3;
+
+function draw_str_at(str, x, y, color, size, align){
+	align = (typeof align !== 'undefined') ?  align : TXT_ALIGN_LEFT;
+	switch(align){
+		case TXT_ALIGN_LEFT:
+		default:
+			CTX.textAlign = "start"
+			break;
+		case TXT_ALIGN_CENTER:
+			CTX.textAlign = "center"
+			break;
+		case TXT_ALIGN_RIGHT:
+			CTX.textAlign = "end"
+			break;
+	}
 	CTX.fillStyle = "#"+color.toString(16).lpad("0", 6);
 	CTX.font = size+"px Arial";//Use OpenSans-Regular.ttf if possible
 	CTX.fillText(str, x, y+size);
@@ -355,7 +372,7 @@ function reflector_update(){
 			draw_rect_at(v.x-3, v.y-3, 6, 6, 0x000000, 255)
 		}
         
-		draw_str_at(String(dist_travelled), 430, 10, 0x000000, 24);//TODO: STRING SHOULD BE RIGHT-ALIGNED!
+		draw_str_at(String(dist_travelled), CANVAS.width - 10, 10, 0x000000, 24, TXT_ALIGN_RIGHT);
     }else if(app_menu_id == 2){
         draw_str_at("You broke a reflector!", 35, 50, 0x000000, 40)
         
