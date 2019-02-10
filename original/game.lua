@@ -95,14 +95,18 @@ function hittest_point_rect(x, y, ax, ay, bx, by, dx, dy)
     return true
 end
 
---Hit test of circle vs line segment
-function hittest_circle_line_seg(x, y, radius_sq, ax, ay, bx, by)
-    local perpslope = (ax-bx)/(by-ay)--prependicular to slope of line
-    local ox = math.sqrt(radius_sq/(1+perpslope*perpslope))    
-    if hittest_point_rect(x, y, ax+ox, ay+perpslope*ox, ax-ox, ay-perpslope*ox, bx+ox, by+perpslope*ox) then
-        return true
-    end
-    return false
+--Hit test of circle vs line segment (just rectangular, not obround)
+function hittest_circle_line_seg(x, y, radius, ax, ay, bx, by)
+    --The perpendicular (normal) vector can be found by
+    --swapping the x and y values and negating one of the two
+    local perpvec_x = by-ay
+    local perpvec_y = -(bx-ax)
+    local perplen = math.sqrt(perpvec_x*perpvec_x + perpvec_y*perpvec_y)
+    local proport = radius / perplen
+    local scaled_x = perpvec_x*proport
+    local scaled_y = perpvec_y*proport
+    --{bx-scaled_x, by-scaled_y} would be bottom right point, for y pointing downwards
+    return hittest_point_rect(x, y, ax+scaled_x, ay+scaled_y, ax-scaled_x, ay-scaled_y, bx+scaled_x, by+scaled_y)
 end
 
 function hittest_circle_point(x, y, radius_sq, ax, ay)
@@ -205,7 +209,7 @@ function reflector_update()
                     local y = ground_tbl_bot[i]
                     local x_next = (i)*points_xdist+ground_tbl_x
                     local y_next = ground_tbl_bot[i+1]
-                    if hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y, x_next, y_next) then
+                    if hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius, x, y, x_next, y_next) then
                         has_hit = true
                     end
                     if hittest_circle_point(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y) then
@@ -218,7 +222,7 @@ function reflector_update()
                     local y = ground_tbl_top[i]
                     local x_next = (i)*points_xdist+ground_tbl_x
                     local y_next = ground_tbl_top[i+1]
-                    if hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y, x_next, y_next) then
+                    if hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius, x, y, x_next, y_next) then
                         has_hit = true
                     end
                     if hittest_circle_point(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y) then
