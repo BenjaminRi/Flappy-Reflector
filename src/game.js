@@ -56,10 +56,10 @@ function init_reflector_screen(menu_id){
 	CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
     
     tickno = 0;
-    refl_x = 20;
-    refl_y = 300;
-    refl_w = 40;
-    refl_h = 40;
+    refl_x = 30;
+    refl_y = 310;
+    refl_w = 30;
+    refl_h = 30;
     refl_radius = 15;
     refl_radius_sq = refl_radius*refl_radius;
     refl_speed_x = 4;
@@ -145,14 +145,18 @@ function hittest_point_rect(x, y, ax, ay, bx, by, dx, dy){
     return true;
 }
 
-//Hit test of circle vs line segment
-function hittest_circle_line_seg(x, y, radius_sq, ax, ay, bx, by){
-    var perpslope = (ax-bx)/(by-ay);//prependicular to slope of line
-    var ox = Math.sqrt(radius_sq/(1+perpslope*perpslope));
-    if(hittest_point_rect(x, y, ax+ox, ay+perpslope*ox, ax-ox, ay-perpslope*ox, bx+ox, by+perpslope*ox)){
-        return true;
-    }
-    return false;
+//Hit test of circle vs line segment (just rectangular, not obround)
+function hittest_circle_line_seg(x, y, radius, ax, ay, bx, by){
+    //The perpendicular (normal) vector can be found by
+    //swapping the x and y values and negating one of the two
+    var perpvec_x = by-ay
+    var perpvec_y = -(bx-ax)
+    var perplen = Math.sqrt(perpvec_x*perpvec_x + perpvec_y*perpvec_y)
+    var proport = radius / perplen
+    var scaled_x = perpvec_x*proport
+    var scaled_y = perpvec_y*proport
+    //{bx-scaled_x, by-scaled_y} would be bottom right point, for y pointing downwards
+    return hittest_point_rect(x, y, ax+scaled_x, ay+scaled_y, ax-scaled_x, ay-scaled_y, bx+scaled_x, by+scaled_y)
 }
 
 function hittest_circle_point(x, y, radius_sq, ax, ay){
@@ -247,7 +251,7 @@ function reflector_update(){
                     var y = ground_tbl_bot[i-1]
                     var x_next = (i)*points_xdist+ground_tbl_x
                     var y_next = ground_tbl_bot[i]
-                    if(hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y, x_next, y_next)){
+                    if(hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius, x, y, x_next, y_next)){
                         has_hit = true
 					}
                     if(hittest_circle_point(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y)){
@@ -260,7 +264,7 @@ function reflector_update(){
                     var y = ground_tbl_top[i-1]
                     var x_next = (i)*points_xdist+ground_tbl_x
                     var y_next = ground_tbl_top[i]
-                    if(hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y, x_next, y_next)){
+                    if(hittest_circle_line_seg(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius, x, y, x_next, y_next)){
                         has_hit = true
                     }
                     if(hittest_circle_point(refl_x + refl_w/2, refl_y + refl_h/2, refl_radius_sq, x, y)){
