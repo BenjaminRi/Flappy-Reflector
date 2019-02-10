@@ -102,11 +102,28 @@ function draw_rect_at(x, y, w, h, color, alpha){
 	CTX.globalAlpha = 1.0;
 }
 
-function draw_circle_at(x, y, radius, color){
+function draw_reflector_at(x, y, radius, color){
+	var twoPi = 2 * Math.PI
+	CTX.save();
 	CTX.beginPath();
-	CTX.arc(x, y, radius, 0, 2 * Math.PI, false);
-	CTX.fillStyle = "#"+color.toString(16).lpad("0", 6);
+	CTX.arc(x, y, radius, 0, twoPi, false);
+	CTX.fillStyle = "#000000";
 	CTX.fill();
+	CTX.beginPath();
+	CTX.translate(x+0.25*radius, y);
+	CTX.scale(0.9, 1);
+	CTX.arc(0, 0, radius*0.7, 0, twoPi, false);
+	CTX.fillStyle = "#FFFFFF";
+	CTX.fill();
+	CTX.beginPath();
+	CTX.arc(0, 0, radius*0.6, 0, twoPi, false);
+	CTX.fillStyle = "#000000";
+	CTX.fill();
+	CTX.beginPath();
+	CTX.arc(0, 0, radius*0.5, 0, twoPi, false);
+	CTX.fillStyle = "#FFFFFF";
+	CTX.fill();
+	CTX.restore();
 }
 
 function draw_str_at(str, x, y, color, size){
@@ -329,15 +346,13 @@ function reflector_update(){
 		draw_poly(pts_bot, 0x0097BA);
         
         if(app_over == -1 || tickno - app_over < hit_parts_delay){
-			//draw_rect_at(refl_x, refl_y, refl_w, refl_h, 0xFF0000, 255);
-			draw_circle_at(refl_x+refl_w/2, refl_y+refl_h/2, refl_w/2, 0x8A42FF);
-			//TODO: SHOULD BE REFLECTOR IMAGE INSTEAD OF RECTANGLE! "images/Targets/RFI_0.5@4x.png"
+			draw_reflector_at(refl_x+refl_w/2, refl_y+refl_h/2, refl_w/2, 0x8A42FF);
         }
         
 		for (var k in hit_parts) {
 			var v = hit_parts[k];
 			//print(k, v.x, v.y, v.vx, v.vy)
-			draw_rect_at(v.x-3, v.y-3, 6, 6, 0x8A42FF, 255) //TODO: Colour is actually 0x000000
+			draw_rect_at(v.x-3, v.y-3, 6, 6, 0x000000, 255)
 		}
         
 		draw_str_at(String(dist_travelled), 430, 10, 0x000000, 24);//TODO: STRING SHOULD BE RIGHT-ALIGNED!
