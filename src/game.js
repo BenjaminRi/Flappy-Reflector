@@ -7,6 +7,8 @@ CANVAS.height = 640;
 CANVAS.className = "canv";
 document.body.appendChild(CANVAS);
 
+var IS_TOUCH_DEVICE = true == ("ontouchstart" in window || window.DocumentTouch && document instanceof DocumentTouch);
+
 function renderUpdate(){
 	CTX.fillStyle = "gray";
 	CTX.fillRect(0, 0, CANVAS.width, CANVAS.height);
@@ -411,14 +413,53 @@ function hndl_reflector_press(mapargs){
 }
 
 function handleMousedownGlobal(evt){
-	var rect = CANVAS.getBoundingClientRect();
+	var client_x;
+	var client_y;
+	if(evt.changedTouches !== undefined){
+		if(evt.changedTouches.length >= 1){
+			client_x = evt.changedTouches[0].clientX;
+			client_y = evt.changedTouches[0].clientY;
+		}else{
+			return;
+		}
+	}else{
+		client_x = evt.clientX;
+		client_y = evt.clientY;
+	}
 	var style = window.getComputedStyle(CANVAS);
-	var mouse_x = Math.round(evt.clientX - rect.left - parseInt(style.getPropertyValue('border-left-width')));
-	var mouse_y = Math.round(evt.clientY - rect.top - parseInt(style.getPropertyValue('border-top-width')));
+	var bd_left = parseInt(style.getPropertyValue('border-left-width'));
+	var bd_right = parseInt(style.getPropertyValue('border-right-width'));
+	var bd_top = parseInt(style.getPropertyValue('border-top-width'));
+	var bd_bottom = parseInt(style.getPropertyValue('border-bottom-width'));
+	
+	var rect = CANVAS.getBoundingClientRect();
+	
+	var canv_true_width = rect.width - bd_left - bd_right;
+	var canv_true_height = rect.height - bd_top - bd_bottom;
+	
+	//Transform global mouse coordinates into relative canvas coordinates
+	//({0,0} is top left and {CANVAS.width,CANVAS.height} is bottom right)
+	var mouse_x = Math.round((client_x - rect.left - bd_left) * (CANVAS.width/canv_true_width));
+	var mouse_y = Math.round((client_y - rect.top - bd_top) * (CANVAS.height/canv_true_height));
 	hndl_reflector_press({x: mouse_x, y: mouse_y});
 }
 
-document.addEventListener('mousedown', function (evt) {handleMousedownGlobal(evt);}, false);
+document.addEventListener(IS_TOUCH_DEVICE ? 'touchstart' : 'mousedown', function (evt) {handleMousedownGlobal(evt);}, false);
+if(IS_TOUCH_DEVICE){
+	window.onresize = function(event) {//On mobile, make game fullscreen
+		var rect = CANVAS.getBoundingClientRect();
+		var ratio_1 = window.innerWidth/rect.width;
+		var ratio_2 = window.innerHeight/rect.height;
+		if(ratio_1 < ratio_2){
+			CANVAS.style.height = "";
+			CANVAS.style.width = "100%";
+		}else{
+			CANVAS.style.height = "100%";
+			CANVAS.style.width = "";
+		}	
+	};
+	window.onresize(null);
+}
 
 
 init_reflector_screen()
